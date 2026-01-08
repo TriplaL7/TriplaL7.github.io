@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- SEO: BLOCCO TOTALE INDICIZZAZIONE -->
+    <!-- Ora il sito è invisibile ai motori di ricerca. Raggiungibile solo con il link. -->
+    <meta name="robots" content="noindex, nofollow, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow">
+    
+    <title>Archivio Privato</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icone -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Disabilita selezione testo e immagini */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Previene il download facile */
+        .protected-img { pointer-events: none; }
+
+        /* Scrollbar personalizzata scura */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #171717; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+        /* WATERMARK STYLE (COMMENTATO/DISATTIVATO) */
+        /*
+        .watermark-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.3;
+            transform: rotate(-15deg);
+        }
+        .watermark-text {
+            font-size: 2rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.5);
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        */
+    </style>
+</head>
+<body class="bg-neutral-900 text-gray-200 font-sans min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-neutral-900 flex flex-col items-center justify-center p-4">
+        <div class="max-w-md w-full bg-neutral-800 p-8 rounded-xl shadow-2xl border border-neutral-700 fade-in">
+            <div class="text-center mb-6">
+                <i data-lucide="shield-lock" class="w-16 h-16 mx-auto text-emerald-500 mb-4"></i>
+                <h1 class="text-2xl font-bold text-white">Area Riservata</h1>
+                <p class="text-gray-400 mt-2 text-sm">Inserisci la chiave di accesso.</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <input type="password" id="password-input" 
+                    class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-center text-lg tracking-widest placeholder:tracking-normal transition-colors"
+                    placeholder="Password..." required>
+                <button type="submit" 
+                    class="w-full bg-emerald-600 active:bg-emerald-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <span id="btn-text">Entra</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+                <p id="error-msg" class="text-red-500 text-sm text-center hidden">Password errata.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP CONTAINER -->
+    <div id="app-container" class="hidden flex-col min-h-screen">
+        
+        <!-- Navbar -->
+        <nav class="border-b border-neutral-800 bg-neutral-900/95 backdrop-blur sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="goHome()">
+                        <i data-lucide="camera" class="w-6 h-6 text-emerald-500"></i>
+                        <span class="text-lg font-bold tracking-wider text-white">FOTO<span class="text-emerald-500">PRIVATE</span></span>
+                    </div>
+                    <button onclick="logout()" class="p-2 text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- VISTA: LISTA ALBUM (HOME) -->
+        <div id="view-albums" class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full fade-in">
+            <header class="mb-8">
+                <h2 class="text-2xl font-bold text-white mb-2">Collezioni</h2>
+                <p class="text-gray-400 text-sm">Seleziona una raccolta per visualizzare.</p>
+            </header>
+
+            <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Javascript inietterà gli album qui -->
+            </div>
+
+            <!-- SEZIONE CONTATTI -->
+            <section class="mt-16 pt-8 border-t border-neutral-800">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="mail" class="w-5 h-5 text-emerald-500"></i> Contatti
+                </h3>
+                <div class="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
+                    <p class="text-gray-300 mb-4">
+                        Per richieste di accesso o collaborazioni:
+                    </p>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="at-sign" class="text-emerald-500 w-4 h-4"></i>
+                            <a href="mailto:tuaemail@esempio.com" class="text-white hover:text-emerald-400 underline">tuaemail@esempio.com</a>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA: DETTAGLIO ALBUM (FOTO GRID) -->
+        <div id="view-photos" class="hidden flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+            <button onclick="goHome()" class="mb-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Torna
+            </button>
+            
+            <h2 id="current-album-title" class="text-2xl font-bold text-white mb-6">Nome Album</h2>
+            
+            <div id="photos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
+                <!-- Javascript inietterà le foto qui -->
+            </div>
+        </div>
+
+        <!-- LIGHTBOX (VISUALIZZAZIONE SINGOLA) -->
+        <div id="lightbox" class="fixed inset-0 z-50 bg-black hidden flex flex-col justify-center items-center opacity-0 transition-opacity duration-300">
+            <!-- Toolbar Lightbox -->
+            <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent z-10">
+                <span id="lightbox-counter" class="text-white text-sm font-mono"></span>
+                <button onclick="closeLightbox()" class="p-2 text-white bg-white/10 rounded-full hover:bg-white/20 backdrop-blur">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Immagine Principale -->
+            <div class="relative w-full h-full flex items-center justify-center p-2 md:p-8 overflow-hidden">
+                <img id="lightbox-img" src="" class="max-h-full max-w-full object-contain protected-img shadow-2xl" oncontextmenu="return false;">
+                
+                <!-- WATERMARK OVERLAY (COMMENTATO/DISATTIVATO) -->
+                <!--
+                <div class="watermark-overlay w-full h-full">
+                    <div class="grid grid-cols-2 gap-20 p-10 opacity-30 select-none">
+                        <span class="watermark-text">LOSTRICAX</span>
+                        <span class="watermark-text">PRIVATE</span>
+                        <span class="watermark-text">PRIVATE</span>
+                        <span class="watermark-text">LOSTRICAX</span>
+                        <span class="watermark-text">LOSTRICAX</span>
+                        <span class="watermark-text">PRIVATE</span>
+                    </div>
+                </div>
+                -->
+            </div>
+
+            <!-- Navigazione Lightbox -->
+            <button onclick="prevPhoto()" class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/50 rounded-full hover:bg-emerald-600 transition-colors z-20">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            </button>
+            <button onclick="nextPhoto()" class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/50 rounded-full hover:bg-emerald-600 transition-colors z-20">
+                <i data-lucide="chevron-right" class="w-6 h-6"></i>
+            </button>
+            
+            <!-- Didascalia -->
+            <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent text-center z-20">
+                <h3 id="lightbox-title" class="text-white font-bold text-lg">Titolo</h3>
+                <p id="lightbox-desc" class="text-gray-300 text-sm">Descrizione</p>
+            </div>
+        </div>
+
+        <footer class="border-t border-neutral-800 py-8 mt-auto bg-neutral-900">
+            <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-xs">
+                &copy; <span id="year"></span> - Lostricax Private. All rights reserved.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURAZIONE SICUREZZA E DATI
+        // ==========================================
+        
+        // 1. PASSWORD (HASH SHA-256)
+        // La password attuale è "1234" (per test)
+        // Se vuoi cambiarla, vai su un sito come "sha256 online generator", 
+        // scrivi la tua password e incolla qui sotto il codice lungo generato.
+        const PASS_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; 
+
+        // 2. I TUOI ALBUM
+        const ALBUMS = [
+            {
+                id: 'dolomiti',
+                title: 'Dolomiti & Montagna',
+                cover: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=800&auto=format&fit=crop',
+                count: '3 Foto',
+                photos: [
+                    { url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1948', title: 'Nebbia Mattutina', desc: 'Lago di Braies' },
+                    { url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1948', title: 'Vetta Innevata', desc: 'Gennaio 2024' },
+                    { url: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=1948', title: 'Sentiero', desc: 'Trekking estivo' }
+                ]
+            },
+            {
+                id: 'citta',
+                title: 'Urban & Street',
+                cover: 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?q=80&w=800&auto=format&fit=crop',
+                count: '2 Foto',
+                photos: [
+                    { url: 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?q=80&w=1948', title: 'Torino Notturna', desc: 'Esposizione lunga' },
+                    { url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1948', title: 'Metro', desc: 'Prospettive urbane' }
+                ]
+            },
+            {
+                id: 'natura',
+                title: 'Dettagli Naturali',
+                cover: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?q=80&w=800&auto=format&fit=crop',
+                count: '2 Foto',
+                photos: [
+                    { url: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?q=80&w=1948', title: 'Bosco', desc: 'Luce filtrata' },
+                    { url: 'https://images.unsplash.com/photo-1501854140884-074bf6b243e7?q=80&w=1948', title: 'Orizzonte', desc: 'Mare d\'inverno' }
+                ]
+            }
+        ];
+
+        // ==========================================
+        // LOGICA APPLICAZIONE
+        // ==========================================
+
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const passwordInput = document.getElementById('password-input');
+        const viewAlbums = document.getElementById('view-albums');
+        const viewPhotos = document.getElementById('view-photos');
+        const albumsGrid = document.getElementById('albums-grid');
+        const photosGrid = document.getElementById('photos-grid');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        
+        let currentAlbumPhotos = [];
+        let currentPhotoIndex = 0;
+
+        // Funzione di hashing sicuro (SHA-256)
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        lucide.createIcons();
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        if (sessionStorage.getItem('isAuth') === 'true') {
+            initApp();
+        }
+
+        // Login con controllo Hash
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnText = document.getElementById('btn-text');
+            const originalText = btnText.innerText;
+            
+            // Feedback visivo loading
+            btnText.innerText = "Verifica...";
+            
+            // Aggiunto .trim() per rimuovere spazi accidentali all'inizio o alla fine
+            const inputPass = passwordInput.value.trim();
+            const inputHash = await sha256(inputPass);
+
+            if (inputHash === PASS_HASH) {
+                sessionStorage.setItem('isAuth', 'true');
+                initApp();
+            } else {
+                document.getElementById('error-msg').classList.remove('hidden');
+                passwordInput.classList.add('border-red-500');
+                btnText.innerText = originalText;
+                // Shake animation
+                loginForm.classList.add('translate-x-2');
+                setTimeout(() => loginForm.classList.remove('translate-x-2'), 100);
+            }
+        });
+
+        function initApp() {
+            loginScreen.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            appContainer.classList.add('flex', 'fade-in');
+            renderAlbums();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAuth');
+            window.location.reload();
+        }
+
+        function renderAlbums() {
+            albumsGrid.innerHTML = '';
+            ALBUMS.forEach(album => {
+                const card = document.createElement('div');
+                card.className = "group cursor-pointer bg-neutral-800 rounded-xl overflow-hidden shadow-lg border border-neutral-700 hover:border-emerald-500 transition-all active:scale-95";
+                card.onclick = () => openAlbum(album.id);
+                
+                card.innerHTML = `
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="${album.cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 p-4">
+                            <span class="text-xs text-emerald-400 font-mono mb-1 block">ALBUM RISERVATO</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="folder-lock" class="w-4 h-4 text-gray-500"></i> ${album.title}
+                        </h3>
+                        <p class="text-gray-400 text-sm mt-1">${album.count}</p>
+                    </div>
+                `;
+                albumsGrid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function goHome() {
+            viewPhotos.classList.add('hidden');
+            viewAlbums.classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function openAlbum(albumId) {
+            const album = ALBUMS.find(a => a.id === albumId);
+            if (!album) return;
+
+            currentAlbumPhotos = album.photos;
+            document.getElementById('current-album-title').textContent = album.title;
+            
+            viewAlbums.classList.add('hidden');
+            viewPhotos.classList.remove('hidden');
+            viewPhotos.classList.add('fade-in');
+            renderPhotos();
+            window.scrollTo(0,0);
+        }
+
+        function renderPhotos() {
+            photosGrid.innerHTML = '';
+            currentAlbumPhotos.forEach((photo, index) => {
+                const el = document.createElement('div');
+                el.className = "relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-neutral-800 hover:opacity-90 transition-opacity border border-neutral-800";
+                el.onclick = () => openLightbox(index);
+                
+                el.innerHTML = `
+                    <img src="${photo.url}" class="w-full h-full object-cover protected-img blur-[1px] hover:blur-0 transition-all duration-300" loading="lazy">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                        <span class="text-white font-black text-xl -rotate-12">LOSTRICAX</span>
+                    </div>
+                `;
+                photosGrid.appendChild(el);
+            });
+        }
+
+        function openLightbox(index) {
+            currentPhotoIndex = index;
+            updateLightboxContent();
+            lightbox.classList.remove('hidden');
+            setTimeout(() => lightbox.classList.remove('opacity-0'), 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.add('opacity-0');
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function updateLightboxContent() {
+            const photo = currentAlbumPhotos[currentPhotoIndex];
+            lightboxImg.src = photo.url;
+            document.getElementById('lightbox-title').textContent = photo.title;
+            document.getElementById('lightbox-desc').textContent = photo.desc;
+            document.getElementById('lightbox-counter').textContent = `${currentPhotoIndex + 1} / ${currentAlbumPhotos.length}`;
+        }
+
+        function nextPhoto() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % currentAlbumPhotos.length;
+            updateLightboxContent();
+        }
+
+        function prevPhoto() {
+            currentPhotoIndex = (currentPhotoIndex - 1 + currentAlbumPhotos.length) % currentAlbumPhotos.length;
+            updateLightboxContent();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.classList.contains('hidden')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextPhoto();
+            if (e.key === 'ArrowLeft') prevPhoto();
+        });
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+    </script>
+</body>
+</html>
